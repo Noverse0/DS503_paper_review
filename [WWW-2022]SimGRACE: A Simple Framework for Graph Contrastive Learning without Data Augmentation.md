@@ -24,7 +24,8 @@ GCL은 보통 augmentaion으로 4가지 방법을 주로 사용합니다(node dr
 GCL은 2가지로 나눌 수 있다. 첫번째는 local과 global representation을 대조하여 encoding을 진행하는 방식이다. DGI과 InfoGraph는 graph-level representaion과 substructure-level representaion의 차이를 최대화하여 graph나 node의 representaion를 encoding한다. 보다 최근에 나온 MVGRL은 node diffusion을 수행하고 contrast learning을 이용해 graph-level과 node-level의 representaion을 얻는 것을 제안한다. 두번째는 data를 변환하는 방법으로 사용되는데 augment하고 이를 shared encoder과 projection head에 넣어 mutual information을 최대화한다. GCA는 node-level task를 위해 제시되었고 DGCL은 false negative 문제를 해결하기 위해 제시되었습니다. Graph-level에서는 GraphCL이 4가지 방법의 augmentaion을 사용하여 제시되었습니다. JOAO는 GraphCL의 manual trail-and-error의 문제를 해결하기 위해 제시되었습니다.
 
 ## **5. Method**  
-사진 들어감
+![SimGRACE](https://user-images.githubusercontent.com/101261577/232289501-42c61afb-f639-473e-b6e1-d8c9b8b5f164.png)
+
 
 **(1) Encoder perturbation**
 
@@ -55,13 +56,15 @@ sim은 cosine similarity이고, final loss는 모든 postive pairs에 대해서 
 
 GraphCL은 GNN framework를 사용하여 Robustness를 얻을 수 있음을 제시하지만 그 이유까지 제시하지는 않습니다. 또한 GraphCL은 random attack에 대해서는 Robust하지만 adversrial attack에서는 취약한 모습을 보입니다. AT-SimGRACE는 adversarial attack에 Robustness를 향상시켰습니다. 일반적인 AT Framework는 다음과 같습니다.
 
-loss 사진
+![AT Framework](https://user-images.githubusercontent.com/101261577/232289517-a039b362-723c-4517-8693-95a02562e4e0.png)
 
 하지만 위의 framework는 graph contrastive learning에 바로 적용할 수 없습니다. 따라서 loss를 위에서 설명한 Contrastive loss로 대체합니다. 또한 효율성을 높히기 위해 다음과 같은 방법을 도입합니다.
 
 $\Theta$를 GNN의 weight space라고 가정하면 $\theta$를 L2 norm을 이용해 다시 정의할 수 있습니다.
 
-loss 사진
+![AT Framework2](https://user-images.githubusercontent.com/101261577/232289522-0ec02f2f-3783-434b-a0b7-da8b33eba60b.png)
+
+![AT Framework3](https://user-images.githubusercontent.com/101261577/232289527-23f9ed5a-23df-4bf0-a551-9c66d0b47ed9.png)
 
 이제 AT-SimGRACE는 optimization problem을 다시 정의하는데 inner maximization를 하기위해 contrastive loss를 gradient ascent 방법으로 update합니다. 이를 통해 $\theta$를 미니배치 단위로 SGD를 통해 update합니다
 
@@ -77,39 +80,39 @@ loss 사진
 
 ### **Unsupervised and semi-supervised learning (RQ1)**  
 
-Table 2
+![Table2](https://user-images.githubusercontent.com/101261577/232289536-9924cc76-f692-4988-87a3-94246c84aa89.png)
 
-Table 4
+![Table4](https://user-images.githubusercontent.com/101261577/232289546-53f6a789-57c9-4a0a-8933-d8bf2ee8fac4.png)
 
 Table2를 보면 Unsuperviesd 경우 SimGRACE가 다른 baseline들을 능가하며 모든 dataset에서 상위 3위 안에 듭니다. 또한 Table 4를 보면 semi-superviesde task를 1%와 10%와 label에서 진행하였는데 SOTA 방법론들과 비교했을때 비슷한 성능을 보이거나 더 능가하는 모습을 보였습니다. 10% label에서 JOAO가 조금 더 나은 성능을 보이느데 JOAO의 비효율성을 생각해보면 SimGRACE의 성능 또한 우수하다 볼 수 있습니다.
 
 ### **Transferability (RQ2)**  
 
-Table 3
+![Table3](https://user-images.githubusercontent.com/101261577/232289556-a1a9f31d-e33e-45e8-8bc3-ffde2c869d4d.png)
 
 Pre-training의 transferability를 평가하기 위해 단백질 기능 예측에 대한 transfer learning에 대한 실험을 진행하였습니다. Table 3에 나와 있듯이 SimGRACE는 PPI dataset에서 다른 pre-training scheme에 따라 더 나은 Transferability에 대한 가능성을 보여줍니다.
 
 ### **Adversarial robustness (RQ3)**  
 
-Table 5
+![Table5](https://user-images.githubusercontent.com/101261577/232289574-7fc89115-24ee-439b-8d43-813cc544a57f.png)
 
 RandSampling, GradArgmax와 RL-S2V에 대해 AT-SimGRACE의 Robustness를 평가했습니다. Structure2vec를 GNN 인코더를 사용하여 진행했습니다. 3가지 evasion attack에서 AT-SimGRACE는 GNN의 Robustness를 눈에 띄게 향상시켰습니다.
 
 ### **Efficiency (RQ4)**  
 
-Table 6
+![Table6](https://user-images.githubusercontent.com/101261577/232289577-68964294-fe00-4165-a094-3f504437c510.png)
 
 훈련 시간과 메모리 overhaed 측면에서 결과를 비교해본 결과 SimGRACE는 JOAOv2보다 거의 40-90배 더 빠르고 GCL보다 2.5-4배 더 빠릅니다. GCL의 traial-and-error의 시간까지 고려하면 SimGRACE의 효율성은 더 뛰어나다고 볼 수 있습니다
 
 
 ### **Hyper-parameters sensitivity analysis (RQ5)**  
 
-Figure 4
+![Figure4](https://user-images.githubusercontent.com/101261577/232289581-5700dfd6-219f-4ac6-ae13-8f065ab8e54e.png)
 
 **Magnitude of the pertubation**
 Figure 4에서 볼 수 있듯이 weight pertubation는 SimGRACE에서 매우 중요합니다. $\eta$에 따라 변화하는 성능을 보면 늘 높다고 좋은 결과를 보이지는 않습니다. $\eta$가 0인 경우는 가장 낮은 성능을 내는데 이는 직관적으로 옳은 결과입니다. 적잘한 $\eta$를 설정하는게 중요하다고 할 수 있습니다.
 
-Figure 5
+![Figure5](https://user-images.githubusercontent.com/101261577/232289585-415c1f7a-42f9-425b-a461-72bf41cb269c.png)
 
 **Batch-size and traing epochs**
 Figure 5은 다양한 배치 크기와 epoch로 훈련된 결과를 나타냅니다. 일반적으로 더 큰 배치 크기와 epoch일때 좋은 성능이 보여집니다. 왜냐하면 배치 크기가 더 클 수록 더 많은 negative sample을 제공하기 때문입니다.
